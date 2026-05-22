@@ -19,24 +19,25 @@ test_holdings = [['AMD', "Advanced Micro Devices, Inc.", "Information Technology
                 ['XEQT', "iShares Core S&P 500", "ETF", 2000.00, MIN, False],
                 ['XETM', "iShares S&P/TSX Energy Transition Mtrls Idx ETF", "ETF", 2000.00, MIN, False]]
 
-if "current_holdings" not in st.session_state:
-    st.session_state.current_holdings = []
-if "holdings" not in st.session_state:
-    st.session_state.holdings = test_holdings
-if "sort_option" not in st.session_state:
-    st.session_state.sort_option = 'Percentage'
-if "show_etf_holdings" not in st.session_state:
-    st.session_state.show_etf_holdings = False
-if "total_value" not in st.session_state:
-    st.session_state.total_value = calculate_total_value(st.session_state.holdings)
-if "num_stocks" not in st.session_state:
-    st.session_state.num_stocks = 10
-
 def launch_app():
     st.set_page_config(
         page_title="Stock Holdings Visualizer",
         layout="wide"
     )
+
+    if "current_holdings" not in st.session_state:
+        st.session_state.current_holdings = []
+    if "holdings" not in st.session_state:
+        st.session_state.holdings = test_holdings
+    if "sort_option" not in st.session_state:
+        st.session_state.sort_option = 'Percentage'
+    if "show_etf_holdings" not in st.session_state:
+        st.session_state.show_etf_holdings = False
+    if "total_value" not in st.session_state:
+        st.session_state.total_value = calculate_total_value(st.session_state.holdings)
+    if "num_stocks" not in st.session_state:
+        st.session_state.num_stocks = 10
+    
     main_window()
 
 def main_window():

@@ -19,4 +19,7 @@ def sort_holdings(holdings, sort_option):
     return holdings
 
 def calculate_total_value(holdings):
-    return sum(holding[AMOUNT] for holding in holdings)
+    sum = 0;
+    for h in holdings:
+        sum += h[AMOUNT]
+    return sum
