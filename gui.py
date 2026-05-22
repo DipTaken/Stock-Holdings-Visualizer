@@ -73,17 +73,18 @@ def display_holdings():
                        x="Percentage",
                        y="Holding",
                        color="Sector",
+                       text="Percentage",
                        category_orders={"Holding": df["Holding"].tolist()},
                        hover_data=["Holding", "Name","Amount", "Percentage", "Sector"],
                        orientation='h',
                        height=700,
-                       width=800)
+                       width=600)
     bar_chart.update_yaxes(type='category')
-    bar_chart.update_layout(transition_duration=500)
     st.plotly_chart(bar_chart)
 
 def display_holdings_input():
     with st.container(height=500):
+        st.session_state.holdings = sort_holdings(st.session_state.holdings, st.session_state.sort_option)
         for holding in st.session_state.holdings:
             holding[AMOUNT] = st.number_input(holding[TICKER] + " (" + holding[NAME] + ")",
                         min_value=MIN,

@@ -2,6 +2,9 @@
 
 A Streamlit web app for visualizing a personal investment portfolio as an interactive bar chart, with the ability to drill into ETF holdings so the underlying stocks are merged into the rest of the portfolio.
 
+## Try it here
+https://diptaken-stockvisualizer.streamlit.app/
+
 ## Features
 
 - Interactive horizontal bar chart of your holdings, colored by sector (Plotly).
