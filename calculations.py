@@ -14,8 +14,8 @@ def sort_holdings(holdings, sort_option):
     elif sort_option == 'Alphabetical':
         holdings.sort(key=lambda x: x[TICKER])
     elif sort_option == 'Sector':
-        holdings.sort(key=lambda x: x[SECTOR])
         holdings.sort(key=lambda x: x[PERCENTAGE], reverse=True)
+        holdings.sort(key=lambda x: x[SECTOR])
     return holdings
 
 def calculate_total_value(holdings):

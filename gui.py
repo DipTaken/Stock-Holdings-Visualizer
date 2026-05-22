@@ -39,20 +39,20 @@ def launch_app():
 
 def main_window():
     st.title("Holdings Visualizer")
-    toggle_etf_holdings()
     st.selectbox("Sort by:", options=['Percentage', 'Alphabetical', 'Sector'], key='sort_option', width=200)
-    st.number_input("Show stocks:", min_value=0, step=1, key='num_stocks', placeholder=15, width=200)
+    st.number_input("Show stocks:", min_value=0, max_value=100, step=1, key='num_stocks', placeholder=15, width=200)
     st.checkbox("Show ETF holdings", key='show_etf_holdings')
-    # print("Holdings after sorting:" + str(st.session_state.current_holdings))
     st.write("You have a total of $" + (str(st.session_state.total_value)) + ".")
-    # st.write(st.session_state)
-    display_holdings()
+    chart_placeholder = st.empty()
     display_holdings_input()
+    toggle_etf_holdings()
+    with chart_placeholder.container():
+        display_holdings()
 
 def display_holdings():
     # print("Holdings:" + str(holdings))
-    st.session_state.current_holdings = sort_holdings(st.session_state.current_holdings, st.session_state.sort_option)
     st.session_state.current_holdings = calculate_percentage(st.session_state.current_holdings)
+    st.session_state.current_holdings = sort_holdings(st.session_state.current_holdings, st.session_state.sort_option)
     df = pd.DataFrame(st.session_state.current_holdings[:st.session_state.num_stocks], columns=["Holding", "Name", "Sector", "Amount", "Percentage", "Is ETF Stock"])
     bar_chart = px.bar(df,
                        x="Percentage",
@@ -66,14 +66,12 @@ def display_holdings():
     st.plotly_chart(bar_chart)
 
 def display_holdings_input():
-    # Dont want to display ETF holdings
-    for holding in st.session_state.current_holdings:
-        if not holding[IS_ETF_STOCK]:
-            holding[AMOUNT] = st.number_input(holding[TICKER] + " (" + holding[NAME] + ")", 
-                        min_value=MIN, 
-                        value=holding[AMOUNT], 
-                        step=0.01,
-                        key=holding[TICKER])
+    for holding in st.session_state.holdings:
+        holding[AMOUNT] = st.number_input(holding[TICKER] + " (" + holding[NAME] + ")",
+                    min_value=MIN,
+                    value=holding[AMOUNT],
+                    step=0.01,
+                    key=holding[TICKER])
         
         
 def toggle_etf_holdings():
@@ -81,10 +79,11 @@ def toggle_etf_holdings():
         st.session_state.current_holdings = st.session_state.holdings.copy()
         for holding in st.session_state.holdings:
             if holding[SECTOR] == "ETF":
-                print("Holding:" + str(holding))
+                # print("Holding:" + str(holding))
                 toggle_individual_etf_holding(holding[TICKER], holding[AMOUNT])
     else:
         st.session_state.current_holdings = [h for h in st.session_state.holdings if not h[IS_ETF_STOCK]]
+        
 def toggle_individual_etf_holding(etf, value):
     etf_stocks= parse_csv(etf)
     merged = {h[TICKER]: h for h in st.session_state.current_holdings if h[TICKER] != etf}
@@ -92,12 +91,10 @@ def toggle_individual_etf_holding(etf, value):
         ticker = stock[CSV_TICKER]
         name = stock[CSV_NAME]
         sector = stock[CSV_SECTOR]
-        amount = stock[CSV_WEIGHT] * 0.01 * value
+        amount = round(stock[CSV_WEIGHT] * 0.01 * value, 2)
         if ticker in merged:
             merged[ticker][AMOUNT] += amount
         else:
             merged[ticker] = [ticker, name, sector, amount, MIN, True]
 
     st.session_state.current_holdings = list(merged.values())
-    
-    

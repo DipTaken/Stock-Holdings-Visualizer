@@ -17,10 +17,10 @@ def parse_csv(file_name):
     reader = csv.reader(file)
     holdings = []
     for row in reader:
-        if (len(row) >= 25 and row[5] != "Weight (%)" and float(row[5]) > 0.00):
+        if (len(row) >= 6 and row[5] != "Weight (%)" and float(row[5]) > 0.00):
             # [Ticker, Name, Sector, Weight (%)]
             holdings.append([row[0], row[1], row[2], float(row[5])])
-    return holdings
+    return holdings[:100]
 
 def find_file(file_name, directory):
     for root, dirs, files in os.walk(directory):
