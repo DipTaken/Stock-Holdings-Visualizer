@@ -5,7 +5,7 @@ import os
 import gui
 
 def main():
-    gui.main_window()
-    
+    gui.launch_app()
+
 if __name__ == "__main__":
     main()
