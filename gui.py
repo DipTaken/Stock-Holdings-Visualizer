@@ -43,7 +43,8 @@ def launch_app():
 def main_window():
     st.title("Stock Holdings Visualizer")
     sidebar()
-    st.session_state.total_value = calculate_total_value(st.session_state.holdings)
+    st.current_holdings = st.session_state.holdings.copy()
+    st.session_state.total_value = calculate_total_value(st.session_state.current_holdings)
     st.write("You have a total of $" + (str(st.session_state.total_value)) + ".")
     toggle_etf_holdings()
     col1, col2 = st.columns([0.7, 0.3])
@@ -82,7 +83,7 @@ def display_holdings():
                        height=700,
                        width=600)
     bar_chart.update_yaxes(type='category')
-    bar_chart.update_
+    bar_chart.update_xaxes(range=[0, 100])
     st.plotly_chart(bar_chart)
 
 def display_holdings_input():
