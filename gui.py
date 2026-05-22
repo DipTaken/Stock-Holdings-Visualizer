@@ -49,7 +49,7 @@ def main_window():
         st.subheader("Edit Holdings")
         display_holdings_input()
     st.session_state.total_value = calculate_total_value(st.session_state.holdings)
-    total_placeholder.write("You have a total of $" + (str(st.session_state.total_value)) + ".")
+    total_placeholder.write(f"You have a total of ${round(st.session_state.total_value, 2)}.")
     toggle_etf_holdings()
     with col1:
         display_holdings()
@@ -59,13 +59,16 @@ def sidebar():
         st.write("Configuration")
         st.selectbox("Sort by:", options=['Percentage', 'Alphabetical', 'Sector'], key='sort_option', width=200)
         st.number_input("Show stocks:", min_value=0, max_value=100, step=1, key='num_stocks', placeholder=15, width=100)
+        st.number_input("Don't display stocks with less than %:", min_value=MIN, max_value=100.00, step=0.01, key='min_percentage', placeholder=0.5, width=300)
         st.checkbox("Show ETF holdings", key='show_etf_holdings')
         st.file_uploader("Import Wealthsimple CSV", type="csv", on_change=load_holdings, key="ws_csv")
 
 def load_holdings():
     st.session_state.holdings = import_wealthsimple_csv(st.session_state.ws_csv)
     st.session_state.total_value = calculate_total_value(st.session_state.holdings)
-    st.session_state.current_holdings = st.session_state.holdings
+    st.session_state.current_holdings = {
+        ticker: replace(h) for ticker, h in st.session_state.holdings.items()
+    }
 
 def display_holdings():
     st.session_state.current_holdings = calculate_percentage(st.session_state.current_holdings)
@@ -74,13 +77,13 @@ def display_holdings():
     if st.session_state.show_etf_holdings:
         rows = [
             (h.ticker, h.name, h.sector, h.amount, h.percentage, h.is_etf_stock)
-            for h in list(st.session_state.current_holdings.values())[:st.session_state.num_stocks] if h.sector != "ETF"
-        ]
+            for h in list(st.session_state.current_holdings.values()) if h.sector != "ETF" and h.percentage >= st.session_state.min_percentage
+        ][:st.session_state.num_stocks]
     else:
         rows = [
             (h.ticker, h.name, h.sector, h.amount, h.percentage, h.is_etf_stock)
-            for h in list(st.session_state.current_holdings.values())[:st.session_state.num_stocks]
-        ]
+            for h in list(st.session_state.current_holdings.values()) if h.percentage >= st.session_state.min_percentage
+        ][:st.session_state.num_stocks]
     
     df = pd.DataFrame(rows, columns=["Holding", "Name", "Sector", "Amount", "Percentage", "Is ETF Stock"])
     bar_chart = px.bar(df,
