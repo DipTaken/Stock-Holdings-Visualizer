@@ -13,7 +13,7 @@ def parse_csv(file_name):
     holdings = []
     for row in reader:
         if (len(row) >= 25 and row[5] != "Weight (%)" and float(row[5]) > 0.00):
-            holdings.append([row[0], row[2], float(row[5])])
+            holdings.append([row[0], row[1], row[2], float(row[5])])
     return holdings
 
 def find_file(file_name, directory):
@@ -21,5 +21,3 @@ def find_file(file_name, directory):
         if f"{file_name}.csv" in files:
             return os.path.join(root, f"{file_name}.csv")
     return None
-
-print(parse_csv("XEQT"))
