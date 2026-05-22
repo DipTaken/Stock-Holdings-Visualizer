@@ -12,6 +12,7 @@ https://diptaken-stockvisualizer.streamlit.app/
 - Sort by **Percentage**, **Alphabetical**, or **Sector**.
 - Limit the number of stocks shown.
 - Toggle "Show ETF holdings" to expand each ETF into its underlying stocks (weighted by the ETF's allocation) and merge them with your existing direct positions.
+- Import your portfolio directly from a Wealthsimple activity CSV.
 
 ## Requirements
 
@@ -36,12 +37,30 @@ streamlit run main.py
 
 This launches the app in your browser.
 
+## Importing from Wealthsimple
+
+The sidebar has an **Import Wealthsimple CSV** uploader that will populate your holdings from a Wealthsimple activity export.
+
+### Getting your CSV from Wealthsimple
+
+The CSV export option is **only available on the desktop website** — the mobile app does not expose it.
+
+1. Open a desktop browser and sign in at [my.wealthsimple.com](https://my.wealthsimple.com).
+2. Open the account you want to export (e.g. your TFSA or non-registered account).
+3. Go to the **Activity** tab for that account.
+4. Click the **download / export** icon (usually near the top of the activity list) and choose **CSV**.
+5. Save the file locally, then upload it via the sidebar uploader in the app.
+
+If you have multiple Wealthsimple accounts, export each one separately and upload them one at a time — each import replaces the current holdings.
+
 ## Project Structure
 
 - [main.py](main.py) — entry point; launches the Streamlit app.
 - [gui.py](gui.py) — Streamlit UI, session state, and chart rendering.
 - [calculations.py](calculations.py) — percentage and sorting logic.
-- [csv_parse.py](csv_parse.py) — reads ETF holdings CSVs from [etf_holdings/](etf_holdings/).
+- [constants.py](constants.py) — `Holding` and `ETFStock` dataclasses and shared constants.
+- [parsing/csv_parse.py](parsing/csv_parse.py) — reads ETF holdings CSVs from [etf_holdings/](etf_holdings/).
+- [parsing/wealthsimple_importer.py](parsing/wealthsimple_importer.py) — parses a Wealthsimple activity CSV into `Holding` objects.
 - [etf_holdings/](etf_holdings/) — CSV files containing per-ETF holdings data (e.g. `XEQT.csv`, `XETM.csv`, `TEC.csv`, `CHPS.csv`).
 
 ## Holdings Format
