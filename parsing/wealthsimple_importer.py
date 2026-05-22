@@ -1,7 +1,7 @@
 import csv
 import io
 from constants import Holding
-from parsing.csv_parse import parse_csv, CSV_TICKER, CSV_SECTOR
+from parsing.csv_parse import parse_csv, ETFStock
 
 def import_wealthsimple_csv(file):
     holdings = {}
@@ -39,7 +39,7 @@ def check_if_known_sector(ticker):
     TEC_holdings = parse_csv("TEC")
     XETM_holdings = parse_csv("XETM")
     ETF_holdings = XEQT_holdings + TEC_holdings + XETM_holdings
-    for holding in ETF_holdings:
-        if holding[CSV_TICKER] == ticker:
-            return holding[CSV_SECTOR]
+    for ETFholding in ETF_holdings:
+        if ETFholding.ticker == ticker:
+            return ETFholding.sector
     return "NO DATA"

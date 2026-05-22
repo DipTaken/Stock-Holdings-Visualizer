@@ -4,7 +4,7 @@ import pandas as pd
 
 from calculations import calculate_percentage, calculate_total_value, sort_holdings
 from parsing.csv_parse import parse_csv
-from constants import MIN, Holding, CSV_TICKER, CSV_NAME, CSV_SECTOR, CSV_WEIGHT
+from constants import MIN, Holding, ETFStock
 from parsing.wealthsimple_importer import import_wealthsimple_csv
 
 test_holdings = [
