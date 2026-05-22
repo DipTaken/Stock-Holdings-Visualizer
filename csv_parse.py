@@ -4,6 +4,11 @@ import streamlit as st
 
 etf_holdings_path = './etf_holdings'
 
+CSV_TICKER = 0
+CSV_NAME = 1
+CSV_SECTOR = 2
+CSV_WEIGHT = 3
+
 def parse_csv(file_name):
     file_path = find_file(file_name, etf_holdings_path)
     if not file_path:
@@ -13,6 +18,7 @@ def parse_csv(file_name):
     holdings = []
     for row in reader:
         if (len(row) >= 25 and row[5] != "Weight (%)" and float(row[5]) > 0.00):
+            # [Ticker, Name, Sector, Weight (%)]
             holdings.append([row[0], row[1], row[2], float(row[5])])
     return holdings
 
