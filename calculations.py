@@ -1,18 +1,20 @@
 def calculate_percentage(holdings):
     total_value = calculate_total_value(holdings)
-    for holding in holdings:
+    items = list(holdings.values())
+    for holding in items:
         holding.percentage = round((holding.amount / total_value) * 100, 2) if total_value else 0.0
-    return holdings
+    return {h.ticker: h for h in items}
 
 def sort_holdings(holdings, sort_option):
+    items = list(holdings.values())
     if sort_option == 'Percentage':
-        holdings.sort(key=lambda h: h.percentage, reverse=True)
+        items.sort(key=lambda h: h.percentage, reverse=True)
     elif sort_option == 'Alphabetical':
-        holdings.sort(key=lambda h: h.ticker)
+        items.sort(key=lambda h: h.ticker)
     elif sort_option == 'Sector':
-        holdings.sort(key=lambda h: h.percentage, reverse=True)
-        holdings.sort(key=lambda h: h.sector)
-    return holdings
+        items.sort(key=lambda h: h.percentage, reverse=True)
+        items.sort(key=lambda h: h.sector)
+    return {h.ticker: h for h in items}
 
 def calculate_total_value(holdings):
-    return sum(h.amount for h in holdings)
+    return round(sum(h.amount for h in list(holdings.values())), 2)

@@ -8,14 +8,14 @@ etf_holdings_path = './etf_holdings'
 def parse_csv(file_name):
     file_path = find_file(file_name, etf_holdings_path)
     if not file_path:
-        return []
+        return {}
     file = open(file_path)
     reader = csv.reader(file)
-    holdings = []
+    holdings = {}
     for row in reader:
         if (len(row) >= 6 and row[5] != "Weight (%)" and float(row[5]) > 0.00):
-            holdings.append(ETFStock(row[0], row[1], row[2], float(row[5])))
-    return holdings[:100]
+            holdings[row[0]] = ETFStock(row[0], row[1], row[2], float(row[5]))
+    return {h.ticker: h for h in list(holdings.values())[:100]}
 
 def find_file(file_name, directory):
     for root, dirs, files in os.walk(directory):

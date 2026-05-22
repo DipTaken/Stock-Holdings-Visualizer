@@ -3,7 +3,7 @@ from dataclasses import dataclass
 MIN = 0.00
 
 @dataclass
-class Holding:
+class Holding():
     ticker: str
     name: str
     sector: str
@@ -12,7 +12,7 @@ class Holding:
     is_etf_stock: bool = False
 
 @dataclass
-class ETFStock:
+class ETFStock():
     ticker: str
     name: str
     sector: str
