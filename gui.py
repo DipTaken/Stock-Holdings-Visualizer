@@ -3,27 +3,21 @@ import plotly.express as px
 import pandas as pd
 
 from calculations import calculate_percentage, calculate_total_value, sort_holdings
-from csv_parse import parse_csv, ETF_NAME, ETF_TICKER, ETF_SECTOR, ETF_WEIGHT
+from csv_parse import parse_csv
+from constants import MIN, TICKER, NAME, SECTOR, AMOUNT, PERCENTAGE, IS_ETF_STOCK, CSV_TICKER, CSV_NAME, CSV_SECTOR, CSV_WEIGHT
     
 
 """
 Holdings are in the form [ticker, name, sector, amount, percentage, is_etf_stock]
 """
-test_holdings = [['AMD', "Advanced Micro Devices, Inc.", "Information Technology", 100.00, 0.00, False], 
-                ['NVDA', "NVIDIA Corporation", "Information Technology", 50.00, 0.00, False], 
-                ['INTC', "Intel Corporation", "Information Technology", 150.00, 0.00, False],
-                ['TD', "Toronto-Dominion Bank", "Financials", 200.00, 0.00, False],
-                ['BMO', "Bank of Montreal", "Financials", 75.00, 0.00, False],
-                ['GOOGL', "Alphabet Inc.", "Communication Services", 300.00, 0.00, False],
-                ['XEQT', "iShares Core S&P 500", "ETF", 2000.00, 0.00, False],
-                ['XETM', "iShares S&P/TSX Energy Transition Mtrls Idx ETF", "ETF", 2000.00, 0.00, False]]
-
-TICKER = 0
-NAME = 1
-SECTOR = 2
-AMOUNT = 3
-PERCENTAGE = 4
-IS_ETF_STOCK = 5
+test_holdings = [['AMD', "Advanced Micro Devices, Inc.", "Information Technology", 100.00, MIN, False], 
+                ['NVDA', "NVIDIA Corporation", "Information Technology", 50.00, MIN, False], 
+                ['INTC', "Intel Corporation", "Information Technology", 150.00, MIN, False],
+                ['TD', "Toronto-Dominion Bank", "Financials", 200.00, MIN, False],
+                ['BMO', "Bank of Montreal", "Financials", 75.00, MIN, False],
+                ['GOOGL', "Alphabet Inc.", "Communication Services", 300.00, MIN, False],
+                ['XEQT', "iShares Core S&P 500", "ETF", 2000.00, MIN, False],
+                ['XETM', "iShares S&P/TSX Energy Transition Mtrls Idx ETF", "ETF", 2000.00, MIN, False]]
 
 if "current_holdings" not in st.session_state:
     st.session_state.current_holdings = []
@@ -39,8 +33,6 @@ if "total_value" not in st.session_state:
     st.session_state.total_value = calculate_total_value(st.session_state.holdings)
 if "num_stocks" not in st.session_state:
     st.session_state.num_stocks = 10
-
-
 
 def launch_app():
     main_window()
@@ -78,7 +70,7 @@ def display_holdings_input():
     for holding in st.session_state.current_holdings:
         if not holding[IS_ETF_STOCK]:
             holding[AMOUNT] = st.number_input(holding[TICKER] + " (" + holding[NAME] + ")", 
-                        min_value=0.00, 
+                        min_value=MIN, 
                         value=holding[AMOUNT], 
                         step=0.01,
                         key=holding[TICKER])
@@ -97,13 +89,14 @@ def toggle_individual_etf_holding(etf, value):
     etf_stocks= parse_csv(etf)
     merged = {h[TICKER]: h for h in st.session_state.current_holdings if h[TICKER] != etf}
     for stock in etf_stocks:
-        ticker = stock[ETF_TICKER]
-        name = stock[ETF_NAME]
-        amount = stock[ETF_WEIGHT] * 0.01 * value
+        ticker = stock[CSV_TICKER]
+        name = stock[CSV_NAME]
+        sector = stock[CSV_SECTOR]
+        amount = stock[CSV_WEIGHT] * 0.01 * value
         if ticker in merged:
             merged[ticker][AMOUNT] += amount
         else:
-            merged[ticker] = [ticker, name, amount, 0.00, True]
+            merged[ticker] = [ticker, name, sector, amount, MIN, True]
 
     st.session_state.current_holdings = list(merged.values())
     

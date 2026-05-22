@@ -1,4 +1,4 @@
-from gui import TICKER, NAME, SECTOR, AMOUNT, PERCENTAGE, IS_ETF_STOCK
+from constants import TICKER, NAME, SECTOR, AMOUNT, PERCENTAGE, IS_ETF_STOCK
 
 def calculate_percentage(holdings):
     total_value = calculate_total_value(holdings)
