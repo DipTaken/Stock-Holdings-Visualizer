@@ -27,7 +27,6 @@ def launch_app():
         page_title="Stock Holdings Visualizer",
         layout="wide"
     )
-
     if "current_holdings" not in st.session_state:
         st.session_state.current_holdings = {}
     if "holdings" not in st.session_state:
@@ -40,7 +39,8 @@ def launch_app():
         st.session_state.total_value = calculate_total_value(st.session_state.holdings)
     if "num_stocks" not in st.session_state:
         st.session_state.num_stocks = 10
-
+    if "etf_holdings" not in st.session_state:
+        st.session_state.etf_holdings = {}
     main_window()
 
 def main_window():
@@ -90,14 +90,14 @@ def add_stock(ticker):
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def search_yfinance(query):
-    if not query:
+    if not query: # if query is empty, don't make API call
         return []
     try:
         results = yf.Search(query, max_results=50, news_count=0, lists_count=0, enable_fuzzy_query=True).quotes
     except Exception:
         return []
     resultList = []
-    for r in results:
+    for r in results: # filter results to only include stocks and ETFs on major exchanges, and extract ticker and name
         if r.get("quoteType", "") not in ["EQUITY", "ETF"] or r.get("exchange") not in ["NMS", "NYQ", "TOR", "CNQ", "NEO", "VAN"]:
             continue
         ticker = r.get("symbol", "")
@@ -137,17 +137,17 @@ def display_holdings():
 
 def display_holdings_input():
     with st.container(height=500):
-        st.session_state.holdings = sort_holdings(st.session_state.holdings, st.session_state.sort_option)
+        st.session_state.holdings = sort_holdings(st.session_state.holdings, st.session_state.sort_option) # sort holdings in input section as well for consistency
         for ticker, holding in list(st.session_state.holdings.items()):
-            if not holding.is_etf_stock:
+            if not holding.is_etf_stock: # only allow editing of non-ETF stocks in the input section
                 col1, col2 = st.columns([0.8, 0.2], vertical_alignment="bottom")
-                with col1:
+                with col1: # display ticker and name, and allow editing of amount
                     holding.amount = st.number_input(holding.ticker + " (" + holding.name + ")",
                             min_value=MIN,
                             value=holding.amount,
                             step=0.01,
                             width=300)
-                with col2:
+                with col2: # button to remove the stock from holdings
                     if st.button("X", key=f"remove_{ticker}", width=50):
                         del st.session_state.holdings[holding.ticker]
                         st.rerun()
@@ -156,15 +156,21 @@ def toggle_etf_holdings():
     st.session_state.current_holdings = {
         ticker: replace(h) for ticker, h in st.session_state.holdings.items()
     }
-    if st.session_state.show_etf_holdings:
+    if st.session_state.show_etf_holdings: # if the toggle is on, expand ETF holdings into current holdings
         for holding in st.session_state.holdings.values():
             if holding.sector == "ETF":
                 expand_etf_into_current(holding.ticker, holding.amount)
 
 def expand_etf_into_current(etf, value):
-    etf_stocks = parse_csv(etf.split(".")[0])
+    # Cache ETF holdings to avoid re-parsing CSVs on every toggle
+    if etf in st.session_state.etf_holdings:
+        etf_stocks = st.session_state.etf_holdings[etf]
+    else:
+        etf_stocks = parse_csv(etf.split(".")[0])
+        st.session_state.etf_holdings[etf] = etf_stocks
+    
     merged = st.session_state.current_holdings
-    for stock in etf_stocks.values():
+    for stock in etf_stocks.values(): # loop through stocks in the ETF and add them to current holdings
         amount = round(stock.weight * 0.01 * value, 2)
         if stock.ticker in merged:
             merged[stock.ticker].amount += amount
