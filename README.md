@@ -89,4 +89,4 @@ The app boots with a hard-coded `test_holdings` dict in [gui.py](gui.py); edit i
 2. The CSV must follow the iShares-style format: a header row, then rows with at least 25 columns where column 0 is the ticker, column 1 is the name, column 2 is the sector, and column 5 is the weight (%).
 3. Add the ETF to `test_holdings` in [gui.py](gui.py) with sector `"ETF"`.
 
-See [etf_holdings/updated.md](etf_holdings/updated.md) for notes on when the bundled datasets were last refreshed. `TEC` and `CHPS` were AI-reformatted, so treat them with caution.
+See [etf_holdings/updated.md](etf_holdings/updated.md) for notes on when the bundled datasets were last refreshed.
