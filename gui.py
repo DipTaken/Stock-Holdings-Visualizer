@@ -75,34 +75,34 @@ def load_holdings():
     }
 
 def search_bar():
-    selection = st_searchbox(search_yfinance, 
-                             label="Search for stocks", 
-                             placeholder="Type a ticker or company name...", 
+    selection = st_searchbox(search_yfinance,
+                             label="Search for stocks",
+                             placeholder="Type a ticker or company name...",
                              key="search_query")
-    if selection not in st.session_state.holdings and selection is not None:
-        add_stock(selection)
+    if selection is not None:
+        ticker, name, sector = selection.split("|", 2)
+        if ticker not in st.session_state.holdings:
+            add_stock(ticker, name, sector)
 
-def add_stock(ticker):
-    stock_info = yf.Ticker(ticker).info
-    name = stock_info.get("longName", ticker)
-    sector = stock_info.get("sector", "ETF")
-    st.session_state.holdings[ticker] = Holding(ticker, name, sector, 0.00, MIN, False) 
+def add_stock(ticker, name, sector):
+    st.session_state.holdings[ticker] = Holding(ticker, name, sector, 0.00, MIN, False)
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def search_yfinance(query):
-    if not query: # if query is empty, don't make API call
+    if not query:
         return []
     try:
         results = yf.Search(query, max_results=50, news_count=0, lists_count=0, enable_fuzzy_query=True).quotes
     except Exception:
         return []
     resultList = []
-    for r in results: # filter results to only include stocks and ETFs on major exchanges, and extract ticker and name
+    for r in results:
         if r.get("quoteType", "") not in ["EQUITY", "ETF"] or r.get("exchange") not in ["NMS", "NYQ", "TOR", "CNQ", "NEO", "VAN"]:
             continue
         ticker = r.get("symbol", "")
         name = r.get("shortname", "")
-        resultList.append((f"{ticker} - {name}", ticker))
+        sector = r.get("sector") or ("ETF" if r.get("quoteType") == "ETF" else "Unknown")
+        resultList.append((f"{ticker} - {name}", f"{ticker}|{name}|{sector}"))
     return resultList
 
 def display_holdings():
