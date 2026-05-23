@@ -83,6 +83,10 @@ def search_bar():
         ticker, name, sector = selection.split("|", 2)
         if ticker not in st.session_state.holdings:
             add_stock(ticker, name, sector)
+            selection = st_searchbox(search_yfinance,
+                             label="Search for stocks",
+                             placeholder="Type a ticker or company name...",
+                             key="search_query")
 
 def add_stock(ticker, name, sector):
     st.session_state.holdings[ticker] = Holding(ticker, name, sector, 0.00, MIN, False)
