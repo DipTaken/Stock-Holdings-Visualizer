@@ -1,12 +1,15 @@
 import streamlit as st
 import plotly.express as px
 import pandas as pd
+import yfinance as yf
 
+from streamlit_searchbox import st_searchbox
 from calculations import calculate_percentage, calculate_total_value, sort_holdings
 from parsing.csv_parse import parse_csv
 from dataclasses import replace
 from constants import MIN, Holding, ETFStock
 from parsing.wealthsimple_importer import import_wealthsimple_csv
+from copy import deepcopy
 
 test_holdings = {
     "AMD": Holding('AMD', "Advanced Micro Devices, Inc.", "Information Technology", 100.00),
@@ -28,7 +31,7 @@ def launch_app():
     if "current_holdings" not in st.session_state:
         st.session_state.current_holdings = {}
     if "holdings" not in st.session_state:
-        st.session_state.holdings = test_holdings
+        st.session_state.holdings = deepcopy(test_holdings)
     if "sort_option" not in st.session_state:
         st.session_state.sort_option = 'Percentage'
     if "show_etf_holdings" not in st.session_state:
@@ -47,6 +50,7 @@ def main_window():
     col1, col2 = st.columns([0.7, 0.3])
     with col2:
         st.subheader("Edit Holdings")
+        search_bar()
         display_holdings_input()
     st.session_state.total_value = calculate_total_value(st.session_state.holdings)
     total_placeholder.write(f"You have a total of ${round(st.session_state.total_value, 2)}.")
@@ -69,6 +73,37 @@ def load_holdings():
     st.session_state.current_holdings = {
         ticker: replace(h) for ticker, h in st.session_state.holdings.items()
     }
+
+def search_bar():
+    selection = st_searchbox(search_yfinance, 
+                             label="Search for stocks", 
+                             placeholder="Type a ticker or company name...", 
+                             key="search_query")
+    if selection not in st.session_state.holdings and selection is not None:
+        add_stock(selection)
+
+def add_stock(ticker):
+    stock_info = yf.Ticker(ticker).info
+    name = stock_info.get("longName", ticker)
+    sector = stock_info.get("sector", "ETF")
+    st.session_state.holdings[ticker] = Holding(ticker, name, sector, 0.00, MIN, False) 
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def search_yfinance(query):
+    if not query:
+        return []
+    try:
+        results = yf.Search(query, max_results=50, news_count=0, lists_count=0, enable_fuzzy_query=True).quotes
+    except Exception:
+        return []
+    resultList = []
+    for r in results:
+        if r.get("quoteType", "") not in ["EQUITY", "ETF"] or r.get("exchange") not in ["NMS", "NYQ", "TOR", "CNQ", "NEO", "VAN"]:
+            continue
+        ticker = r.get("symbol", "")
+        name = r.get("shortname", "")
+        resultList.append((f"{ticker} - {name}", ticker))
+    return resultList
 
 def display_holdings():
     st.session_state.current_holdings = calculate_percentage(st.session_state.current_holdings)
@@ -103,14 +138,19 @@ def display_holdings():
 def display_holdings_input():
     with st.container(height=500):
         st.session_state.holdings = sort_holdings(st.session_state.holdings, st.session_state.sort_option)
-        for holding in st.session_state.holdings.values():
+        for ticker, holding in list(st.session_state.holdings.items()):
             if not holding.is_etf_stock:
-                prev_value = holding.amount
-                holding.amount = st.number_input(holding.ticker + " (" + holding.name + ")",
+                col1, col2 = st.columns([0.8, 0.2], vertical_alignment="bottom")
+                with col1:
+                    holding.amount = st.number_input(holding.ticker + " (" + holding.name + ")",
                             min_value=MIN,
                             value=holding.amount,
                             step=0.01,
                             width=300)
+                with col2:
+                    if st.button("X", key=f"remove_{ticker}", width=50):
+                        del st.session_state.holdings[holding.ticker]
+                        st.rerun()
 
 def toggle_etf_holdings():
     st.session_state.current_holdings = {
@@ -122,7 +162,7 @@ def toggle_etf_holdings():
                 expand_etf_into_current(holding.ticker, holding.amount)
 
 def expand_etf_into_current(etf, value):
-    etf_stocks = parse_csv(etf)
+    etf_stocks = parse_csv(etf.split(".")[0])
     merged = st.session_state.current_holdings
     for stock in etf_stocks.values():
         amount = round(stock.weight * 0.01 * value, 2)
