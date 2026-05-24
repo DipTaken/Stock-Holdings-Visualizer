@@ -144,8 +144,7 @@ def display_holdings():
     rows = [
         (h.ticker, h.name, h.sector, h.amount, h.percentage, h.is_etf_stock)
         for h in list(st.session_state.current_holdings.values()) 
-        if (h.percentage >= st.session_state.min_percentage 
-        and not st.session_state.show_etf_holdings)
+        if h.percentage >= st.session_state.min_percentage
     ][:st.session_state.num_stocks]
     
     df = pd.DataFrame(rows, columns=["Holding", "Name", "Sector", "Amount", "Percentage", "Is ETF Stock"])
