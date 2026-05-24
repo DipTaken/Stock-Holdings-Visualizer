@@ -13,14 +13,12 @@ from dataclasses import replace
 from copy import deepcopy
 
 test_holdings = {
-    "AMD": Holding('AMD', "Advanced Micro Devices, Inc.", "Information Technology", 100.00),
-    "NVDA": Holding('NVDA', "NVIDIA Corporation", "Information Technology", 50.00),
-    "INTC": Holding('INTC', "Intel Corporation", "Information Technology", 150.00),
-    "TD": Holding('TD', "Toronto-Dominion Bank", "Financials", 200.00),
-    "BMO": Holding('BMO', "Bank of Montreal", "Financials", 75.00),
-    "GOOGL": Holding('GOOGL', "Alphabet Inc.", "Communication Services", 300.00),
-    "XEQT": Holding('XEQT', "iShares Core S&P 500", "ETF", 2000.00),
+    "AMD": Holding('AMD', "Advanced Micro Devices, Inc.", "Information Technology", 500.00),
+    "BMO": Holding('BMO', "Bank of Montreal", "Financials", 250.00),
+    "GOOGL": Holding('GOOGL', "Alphabet Inc.", "Communication Services", 1000.00),
+    "XEQT": Holding('XEQT', "iShares Core S&P 500", "ETF", 4000.00),
     "XETM": Holding('XETM', "iShares S&P/TSX Energy Transition Mtrls Idx ETF", "ETF", 2000.00),
+    "TEC": Holding('TEC', "TD Global Technology Leaders Index ETF", "ETF", 2000.00),
 }
 
 def launch_app():
@@ -39,11 +37,10 @@ def initialize_session_state():
         else:
             st.session_state.UUID = str(uuid.uuid4())
     st.query_params["UUID"] = st.session_state.UUID
-    st.session_state.loading_message = "loaded portfolio with UUID " + st.session_state.UUID
     if "current_holdings" not in st.session_state:
         st.session_state.current_holdings = {}
     if "holdings" not in st.session_state:
-        st.session_state.holdings = load_holdings(st.session_state.UUID) or deepcopy(test_holdings)
+        st.session_state.holdings = load_holdings(st.session_state.UUID) or {}
     if "sort_option" not in st.session_state:
         st.session_state.sort_option = 'Percentage'
     if "show_etf_holdings" not in st.session_state:
@@ -58,15 +55,12 @@ def initialize_session_state():
         st.session_state.loading_message = ""
 
 def main_window():
-    st.title("Stock Holdings Visualizer")
     st.subheader("Visualize your stock portfolio and its diversification across sectors. (Currency is CAD)")
     sidebar()
     total_placeholder = st.empty()
     col_graph, col_holdings = st.columns([0.7, 0.3])
-    with col_holdings:
-        st.subheader("Edit Holdings")
-        search_bar()
-        display_holdings_input()
+    with col_holdings: 
+        holdings_column()
     st.session_state.total_value = calculate_total_value(st.session_state.holdings)
     total_placeholder.write(f"You have a total of ${round(st.session_state.total_value, 2)}.")
     toggle_etf_holdings()
@@ -75,6 +69,7 @@ def main_window():
 
 def sidebar():
     with st.sidebar:
+        st.title("Stock Holdings Visualizer")
         st.write("Configuration")
         st.selectbox("Sort by:", options=['Percentage', 'Alphabetical', 'Sector'], key='sort_option', width=200)
         st.number_input("Show stocks:", min_value=0, max_value=100, step=1, key='num_stocks', placeholder=15, width=100)
@@ -86,6 +81,22 @@ def sidebar():
             manual_load()
         st.write("Your portfolio UUID is: " + st.session_state.UUID)
         st.write("Status: " + st.session_state.loading_message)
+
+def holdings_column():
+    st.subheader("Edit Holdings")
+    col_reset, col_default = st.columns(2)
+    with col_reset:
+        if st.button("Reset to empty"):
+            st.session_state.holdings = {}
+            save_current_holdings()
+            st.rerun()
+    with col_default:
+        if st.button("Example portfolio"):
+            st.session_state.holdings = deepcopy(test_holdings)
+            save_current_holdings()
+            st.rerun() 
+    search_bar()
+    display_holdings_input()
 
 def manual_load():
     input_uuid = st.session_state.manual_load_uuid
@@ -111,7 +122,7 @@ def search_bar():
                              key="search_query")
     if selection is not None:
         ticker, name, sector = selection.split("|", 2)
-        if ticker not in st.session_state.holdings or ticker is not None:
+        if ticker not in st.session_state.holdings:
             add_stock(ticker, name, sector)
         st.session_state["search_query"] = None
         st.rerun()
