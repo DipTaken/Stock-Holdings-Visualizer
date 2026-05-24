@@ -144,8 +144,8 @@ def display_holdings():
     rows = [
         (h.ticker, h.name, h.sector, h.amount, h.percentage, h.is_etf_stock)
         for h in list(st.session_state.current_holdings.values()) 
-        if h.percentage >= st.session_state.min_percentage 
-        and (not st.session_state.show_etf_holdings or h.sector != "ETF")
+        if (h.percentage >= st.session_state.min_percentage 
+        and not st.session_state.show_etf_holdings)
     ][:st.session_state.num_stocks]
     
     df = pd.DataFrame(rows, columns=["Holding", "Name", "Sector", "Amount", "Percentage", "Is ETF Stock"])
@@ -183,10 +183,16 @@ def display_holdings_input():
                         st.rerun()
 
 def toggle_etf_holdings():
-    st.session_state.current_holdings = {
-        ticker: replace(h) for ticker, h in st.session_state.holdings.items()
-    }
+
     if st.session_state.show_etf_holdings: # if the toggle is on, expand ETF holdings into current holdings
+        st.session_state.current_holdings = {
+        ticker: replace(h) for ticker, h in st.session_state.holdings.items() 
+                            if h.sector != "ETF"
+        }
         for holding in st.session_state.holdings.values():
             if holding.sector == "ETF":
                 expand_etf_into_current(holding.ticker, holding.amount, st.session_state.etf_holdings, st.session_state.current_holdings)
+    else:
+        st.session_state.current_holdings = {
+            ticker: replace(h) for ticker, h in st.session_state.holdings.items()
+        }
