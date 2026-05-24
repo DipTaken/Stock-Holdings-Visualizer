@@ -68,6 +68,7 @@ def main_window():
     toggle_etf_holdings()
     with col_graph:
         display_holdings()
+        st.checkbox("Show ETF holdings", key='show_etf_holdings')
 
 def sidebar():
     with st.sidebar:
@@ -76,7 +77,6 @@ def sidebar():
         st.selectbox("Sort by:", options=['Percentage', 'Alphabetical', 'Sector'], key='sort_option', width=200)
         st.number_input("Show stocks:", min_value=0, max_value=100, step=1, key='num_stocks', placeholder=15, width=100)
         st.number_input("Don't display stocks with less than %:", min_value=MIN, max_value=100.00, step=0.01, key='min_percentage', placeholder=0.5, width=300)
-        st.checkbox("Show ETF holdings", key='show_etf_holdings')
         st.file_uploader("Import Wealthsimple CSV", type="csv", on_change=load_holdings_from_wealthsimple, key="ws_csv")
         st.text_input("Manual load? (Enter UUID)", key="manual_load_uuid")
         if st.button("Load UUID"):
