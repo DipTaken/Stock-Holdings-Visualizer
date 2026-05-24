@@ -84,6 +84,8 @@ def sidebar():
 
 def holdings_column():
     st.subheader("Edit Holdings")
+    search_bar()
+    display_holdings_input()
     col_reset, col_default = st.columns(2)
     with col_reset:
         if st.button("Reset to empty"):
@@ -95,8 +97,6 @@ def holdings_column():
             st.session_state.holdings = deepcopy(test_holdings)
             save_current_holdings()
             st.rerun() 
-    search_bar()
-    display_holdings_input()
 
 def manual_load():
     input_uuid = st.session_state.manual_load_uuid
