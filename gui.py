@@ -53,9 +53,11 @@ def initialize_session_state():
         st.session_state.etf_holdings = {}
     if "loading_message" not in st.session_state:
         st.session_state.loading_message = ""
+    if "search_query_n" not in st.session_state:
+        st.session_state.search_query_n = 0
 
 def main_window():
-    st.subheader("Visualize your stock portfolio and its diversification across sectors. (Currency is CAD)")
+    st.subheader("Visualize your stock portfolio and its diversification. (Only Canadian listings for now)")
     sidebar()
     total_placeholder = st.empty()
     col_graph, col_holdings = st.columns([0.7, 0.3])
@@ -119,12 +121,13 @@ def search_bar():
     selection = st_searchbox(search_yfinance,
                              label="Search for stocks",
                              placeholder="Type a ticker or company name...",
-                             key="search_query")
+                             key=f"search_query_{st.session_state.search_query_n}")
     if selection is not None:
         ticker, name, sector = selection.split("|", 2)
+        ticker = ticker.split(".", 1)[0] # remove .TO ticker suffix if it exists
         if ticker not in st.session_state.holdings:
             add_stock(ticker, name, sector)
-        st.session_state["search_query"] = None
+        st.session_state.search_query_n += 1 # Force the search box to reset after each selection by changing its key
         st.rerun()
 
 def add_stock(ticker, name, sector):

@@ -23,7 +23,7 @@ def import_wealthsimple_csv(file):
 
 def find_sector(ticker):
     sector = check_if_known_sector(ticker)
-    if sector != "NO DATA":
+    if sector != "Unknown":
         return sector
     else:
         return check_if_known_etf(ticker)
@@ -31,7 +31,7 @@ def find_sector(ticker):
 def check_if_known_etf(ticker):
     if os.path.exists(f'etf_holdings/{ticker}.csv'):
         return "ETF"
-    return "NO DATA"
+    return "Unknown"
 
 def check_if_known_sector(ticker):
     XEQT_holdings = parse_csv("XEQT")
@@ -40,4 +40,4 @@ def check_if_known_sector(ticker):
     for h in (XEQT_holdings, TEC_holdings, XETM_holdings):
         if ticker in h:
             return h[ticker].sector
-    return "NO DATA"
+    return "Unknown"

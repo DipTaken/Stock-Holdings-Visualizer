@@ -11,7 +11,8 @@ def search_yfinance(query):
         return []
     result_list = []
     for r in rows:
-        if r.get("quoteType", "") not in ["EQUITY", "ETF"] or r.get("exchange") not in ["NMS", "NYQ", "TOR", "CNQ", "NEO", "VAN"]:
+        if ((r.get("quoteType", "") not in ["EQUITY", "ETF"] or r.get("exchange") not in ["NMS", "NYQ", "TOR", "CNQ", "NEO", "VAN"]) 
+            and r.get("currency") != "CAD"): #Remove this line after we implement currency conversion
             continue
         ticker = r.get("symbol", "")
         name = r.get("shortname", "")
