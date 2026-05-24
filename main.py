@@ -1,7 +1,3 @@
-import pandas as pd
-
-import os
-
 import gui
 
 def main():

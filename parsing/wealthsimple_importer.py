@@ -1,8 +1,8 @@
 import csv
 import io
 import os
-from constants import Holding
-from parsing.csv_parse import parse_csv, ETFStock
+from models import Holding
+from parsing.csv_parse import parse_csv
 
 def import_wealthsimple_csv(file):
     holdings = {}
